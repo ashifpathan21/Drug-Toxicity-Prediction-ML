@@ -92,10 +92,10 @@ def extract_features(smiles):
 def predict(smiles):
 
     X = extract_features(smiles)
-    mol_details = list(X[0][:12])
-    print(mol_details)
     if X is None:
         return None
+    mol_details = list(X[0][:12])
+    print(mol_details)
 
     # ----------------
     # Standard Scaling
