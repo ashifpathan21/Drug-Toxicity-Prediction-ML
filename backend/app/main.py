@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.predictor import predict
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Tox21 Toxicity Predictor")
 origins = [

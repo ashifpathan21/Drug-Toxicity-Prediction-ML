@@ -1,9 +1,11 @@
-import { useState } from "react";
-import Molecule from "./component/Molecule";
+import React, { useState } from "react";
+import Molecule, {type PredictionData } from "./component/Molecule";
+import PredictionDetails from "./component/PredictionDetails";
 
 export default function App() {
   const [smiles, setSmiles] = useState("");
   const [query, setQuery] = useState("");
+  const [prediction, setPrediction] = useState<PredictionData | null>(null);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,10 +49,12 @@ export default function App() {
             <span className="badge-accent text-xs">{query ? `Rendering ${query}` : "Awaiting input"}</span>
           </div>
 
-          <Molecule smiles={query} />
+          <Molecule smiles={query} onPrediction={setPrediction} />
         </section>
 
-        
+        <section className="card-panel p-6 md:p-8">
+          <PredictionDetails prediction={prediction} />
+        </section>
       </main>
 
       <footer className="px-6 text-center py-4 text-sm text-on-surface-variant border-t border-outline-variant">

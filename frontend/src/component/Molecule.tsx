@@ -23,9 +23,12 @@ type PredictionResponse = {
 
 type Props = {
   smiles: string;
+  onPrediction?: (prediction: PredictionData | null) => void;
 };
 
-export default function Molecule({ smiles }: Props) {
+export type { PredictionData };
+
+export default function Molecule({ smiles, onPrediction }: Props) {
   const viewerRef = useRef<HTMLDivElement | null>(null);
   const viewer = useRef<any>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -61,10 +64,9 @@ export default function Molecule({ smiles }: Props) {
   };
 
   const maxProb = prediction ? Math.min(100, Math.max(0, Number(prediction.max_prob) * 100)) : 0;
-  const targetToxic = prediction?.targets?.toxic;
-  const thresholdValue = targetToxic ? Number(targetToxic.threshold) * 100 : 50;
   const isUnsafe = prediction
-    ? prediction.final_toxic_verdict || (targetToxic ? Number(targetToxic.predict_prob) * 100 >= thresholdValue : false)
+    ? prediction.final_toxic_verdict ||
+      Object.values(prediction.targets).some((target) => target.toxic)
     : false;
 
   useEffect(() => {
@@ -74,6 +76,7 @@ export default function Molecule({ smiles }: Props) {
       setStatus("idle");
       setErrorMessage("");
       setPrediction(null);
+      onPrediction?.(null);
 
       if (viewer.current) {
         viewer.current.clear();
@@ -114,6 +117,7 @@ export default function Molecule({ smiles }: Props) {
         }
 
         setPrediction(predictionData);
+        onPrediction?.(predictionData);
 
         if (!viewer.current) {
           viewer.current = $3Dmol.createViewer(viewerRef.current, {
@@ -176,33 +180,6 @@ export default function Molecule({ smiles }: Props) {
         className="molecule-viewer rounded-xl overflow-hidden border border-cyan-300/25"
         style={{ width: "100%", minHeight: "430px" }}
       />
-
-      {prediction && (
-        <section className="mt-4 grid gap-4 md:grid-cols-2 items-start">
-          <div className="p-4 rounded-xl border border-cyan-300/20 bg-white/5">
-            <h4 className="font-semibold mb-2">Toxicity Summary</h4>
-            <p className="mb-2">Final Verdict: <span className={isUnsafe ? "text-rose-300" : "text-emerald-300"}>{prediction.final_toxic_verdict ? "Toxic" : "Safe"}</span></p>
-            <p>Max probability: <strong>{maxProb.toFixed(1)}%</strong></p>
-            <div className="mt-3 w-full max-w-xs">
-              <div className={`prob-ring ${isUnsafe ? "unsafe" : "safe"}`} style={{ "--p": `${maxProb}` } as any}>
-                <span>{maxProb.toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl border border-cyan-300/20 bg-white/5">
-            <h4 className="font-semibold mb-2">Key Predictors</h4>
-            <ul className="text-sm space-y-1">
-              {prediction.names.map((name, index) => (
-                <li key={name} className="flex justify-between">
-                  <span>{name}</span>
-                  <span className="font-semibold">{prediction.info[index]}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
 
       {status === "idle" && (
         <p className="text-on-surface-variant text-sm">Type a SMILES and click Predict to load molecule.</p>
