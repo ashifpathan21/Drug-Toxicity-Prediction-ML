@@ -9,56 +9,77 @@ export default function App() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setQuery(smiles.trim());
+    const cleanSmiles = smiles.trim();
+    if (!cleanSmiles) return;
+    setQuery(cleanSmiles);
   };
 
   return (
-    <div className="min-h-screen max-w-screen overflow-x-hidden h-full bg-surface text-on-surface">
-      <nav className="p-5 flex items-center justify-between bg-surface-container-high border-b border-outline-variant">
-        <h2 className="text-2xl font-bold text-cyan-300 tracking-wider">
-          Our_Lab
-        </h2>
+    <div className="min-h-screen max-w-screen overflow-x-hidden h-full relative">
+      <div className="scanline"></div>
+      
+      <nav className="p-4 flex items-center justify-between border-b border-outline-variant bg-surface-container-low">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-[#00ffaa] flex items-center justify-center">
+            <span className="text-[#00ffaa] text-xs font-bold font-mono">LAB</span>
+          </div>
+          <h2 className="text-xl font-bold tracking-[0.2em] text-[#00ffaa]">
+            SYS::TOX_PREDICT
+          </h2>
+        </div>
+        <div className="text-xs text-on-surface-variant font-mono uppercase">
+          Status: <span className="text-[#00ffaa]">Online</span>
+        </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
-        <section className="card-panel particle-border p-6 md:p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-extrabold">AI Drug Toxicity Predictor</h1>
-            <p className="text-sm md:text-base text-on-surface-variant mt-2 max-w-3xl">
-              Predict molecular toxicity using ML trained on public datasets. Enter a SMILES string or upload a structure file to get a rapid risk score.
-            </p>
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <section className="card-panel">
+          <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-[#00e5ff] mb-2">Drug Toxicity Predictor</h1>
+              <p className="text-sm text-on-surface-variant max-w-2xl font-mono">
+                &gt; Initialize sequence. Enter valid SMILES configuration to commence machine learning test.
+              </p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid z-10 gap-4 md:grid-cols-[1fr_auto] items-center">
-            <input
-              value={smiles}
-              onChange={(e) => setSmiles(e.target.value)}
-              type="text"
-              name="smiles"
-              className="input-glow rounded-xl text-white placeholder:text-on-surface-variant"
-              placeholder="Enter SMILES string (e.g., CC(=O)Oc1ccccc1C(=O)O)"
-              required
-            />
-            <button type="submit" className="btn-neon rounded-xl text-lg">Predict</button>
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1 w-full relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#00ffaa] font-mono">&gt;</span>
+              <input
+                value={smiles}
+                onChange={(e) => setSmiles(e.target.value)}
+                type="text"
+                name="smiles"
+                className="input-glow pl-8 w-full"
+                placeholder="INPUT SMILES STRING (e.g., CC(=O)Oc1ccccc1C(=O)O)"
+                required
+              />
+            </div>
+            <button type="submit" className="btn-neon w-full md:w-auto h-[46px]">EXECUTE</button>
           </form>
         </section>
 
-        <section className="card-panel p-6 md:p-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Molecule Viewer</h2>
-            <span className="badge-accent text-xs">{query ? `Rendering ${query}` : "Awaiting input"}</span>
+        <section className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+          <div className="card-panel grid p-4 h-full">
+            <div className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+              <span className="text-sm font-bold uppercase tracking-widest text-[#00e5ff]">3D Structure Viewer</span>
+              <span className="badge-accent">{query ? `RENDER_ACTIVE` : "STANDBY"}</span>
+            </div>
+            <Molecule smiles={query} onPrediction={setPrediction} />
           </div>
 
-          <Molecule smiles={query} onPrediction={setPrediction} />
-        </section>
-
-        <section className="card-panel p-6 md:p-8">
-          <PredictionDetails prediction={prediction} />
+          <div className="card-panel card-panel-cyan p-4 h-full">
+            <div className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+              <span className="text-sm font-bold uppercase tracking-widest text-[#00ffaa]">Analysis Results</span>
+            </div>
+            <PredictionDetails prediction={prediction} />
+          </div>
         </section>
       </main>
 
-      <footer className="px-6 text-center py-4 text-sm text-on-surface-variant border-t border-outline-variant">
-        © 2026 Our_Lab 
+      <footer className="mt-auto px-6 text-center py-4 text-xs font-mono text-on-surface-variant border-t border-outline-variant">
+        TERMINAL_ID: Our_Lab_0x42 | v1.0.4 | All Systems Operational
       </footer>
     </div>
   );

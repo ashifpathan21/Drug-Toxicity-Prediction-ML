@@ -1,17 +1,20 @@
 export default function Loading() {
   return (
-    <div className="loading-shell flex items-center justify-center min-h-[180px]">
-      <div className="reaction-vessel relative w-44 h-44 rounded-2xl border-2 border-primary/60 bg-surface-container-high overflow-hidden">
-        <div className="bubble-group absolute bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-3/4">
-          <span className="bubble" style={{ left: '15%', animationDelay: '0s' }} />
-          <span className="bubble" style={{ left: '45%', animationDelay: '0.15s' }} />
-          <span className="bubble" style={{ left: '70%', animationDelay: '0.28s' }} />
+    <div className="flex flex-col items-center justify-center min-h-[220px] p-6">
+      <div className="flex flex-col items-center relative">
+        <div className="flask-neck" />
+        <div className="flask-loader" />
+        <div className="lab-bubbles w-[60px] h-[80px] absolute bottom-0 left-1/2 -translate-x-1/2 overflow-hidden pointer-events-none">
+          <span style={{ left: '15%', animationDelay: '0s', animationDuration: '1.5s' }} />
+          <span style={{ left: '45%', animationDelay: '0.4s', animationDuration: '2.1s' }} />
+          <span style={{ left: '70%', animationDelay: '0.9s', animationDuration: '1.2s' }} />
+          <span style={{ left: '25%', animationDelay: '0.2s', animationDuration: '1.8s' }} />
+          <span style={{ left: '60%', animationDelay: '0.7s', animationDuration: '1.4s' }} />
         </div>
-        <div className="glow-ring absolute inset-1 rounded-xl border border-cyan-300/25 animate-pulse" />
       </div>
-      <div className="ml-4 text-on-surface">
-        <div className="font-semibold text-lg mb-1">Analyzing Molecules</div>
-        <div className="text-sm text-on-surface-variant">Please wait while chemistry magic is computed...</div>
+      <div className="mt-6 text-on-surface text-center">
+        <div className="font-bold tracking-widest text-[#00ffaa] mb-1">ANALYZING DRUG TOXICITY...</div>
+        <div className="text-xs text-on-surface-variant uppercase tracking-wider">Running Toxicity Diagnostics</div>
       </div>
     </div>
   );
