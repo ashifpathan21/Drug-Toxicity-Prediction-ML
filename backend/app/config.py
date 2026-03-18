@@ -17,16 +17,16 @@ MODEL_PATHS = {
 
 
 THRESHOLDS = {
-"NR-AR":0.75,
-"NR-AR-LBD":0.75,
+"NR-AR":0.5,
+"NR-AR-LBD":0.5,
 "NR-AhR":0.5,
-"NR-Aromatase":0.6,
-"NR-ER":0.6,
-"NR-ER-LBD":0.7,
-"NR-PPAR-gamma":0.3,
-"SR-ARE":0.6,
-"SR-ATAD5":0.65,
-"SR-HSE":0.55,
-"SR-MMP":0.4,
+"NR-Aromatase":0.5,
+"NR-ER":0.5,
+"NR-ER-LBD":0.5,
+"NR-PPAR-gamma":0.5,
+"SR-ARE":0.5,
+"SR-ATAD5":0.5,
+"SR-HSE":0.5,
+"SR-MMP":0.5,
 "SR-p53":0.5
 }
