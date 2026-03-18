@@ -59,6 +59,17 @@ export default function App() {
                 &gt; Initialize sequence. Enter valid SMILES configuration to commence machine learning test.
               </p>
             </div>
+            <div className="flex flex-col gap-2">
+              <a 
+                href="https://t.me/drug_toxicity_detector_bot" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn-neon text-center px-4 py-2 h-auto text-sm"
+              >
+                💬 TRY TELEGRAM BOT
+              </a>
+              <span className="text-xs text-on-surface-variant text-center">@drug_toxicity_detector_bot</span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-center">
@@ -96,8 +107,18 @@ export default function App() {
         </section>
       </main>
 
-      <footer className="mt-auto px-6 text-center py-4 text-xs font-mono text-on-surface-variant border-t border-outline-variant">
-        TERMINAL_ID: Our_Lab_0x42 | v1.0.4 | All Systems Operational
+      <footer className="mt-auto px-6 py-4 text-xs font-mono text-on-surface-variant border-t border-outline-variant">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <span>TERMINAL_ID: Our_Lab_0x42 | v1.0.5 | All Systems Operational</span>
+          <a 
+            href="https://t.me/drug_toxicity_detector_bot" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[#00ffaa] hover:text-[#00ffaa]/80 transition-colors"
+          >
+            📱 Telegram Bot: @drug_toxicity_detector_bot
+          </a>
+        </div>
       </footer>
     </div>
   );

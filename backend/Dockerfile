@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libsm6 \
     libxext6 \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (for Docker caching)
@@ -22,8 +23,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Copy and make entrypoint script executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Expose FastAPI port
 EXPOSE 8000
 
-# Run FastAPI server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run both FastAPI and Telegram bot
+ENTRYPOINT ["/app/entrypoint.sh"]

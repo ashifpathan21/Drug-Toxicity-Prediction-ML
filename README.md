@@ -254,6 +254,58 @@ The model predicts toxicity across 12 biological endpoints:
   - SR-MMP: Mitochondrial Membrane Potential
   - SR-p53: p53 protein pathway
 
+## 🤖 Telegram Bot Integration
+
+The application includes a Telegram bot that allows users to analyze chemical toxicity directly from Telegram!
+
+**Bot Username:** `@drug_toxicity_detector_bot`
+
+### Features
+- 💬 Accepts SMILES strings via Telegram messages
+- 📊 Returns detailed toxicity predictions for 12 endpoints
+- 🧬 Displays molecular features and risk assessment
+- ❌ Handles invalid SMILES with helpful error messages
+- 🆘 Provides `/help` and `/start` commands
+
+### Quick Start with Bot
+1. Open Telegram and search for `@drug_toxicity_detector_bot`
+2. Click "Start" or type `/start` to see welcome message
+3. Send any SMILES string (e.g., `CC(=O)Oc1ccccc1C(=O)O`)
+4. Bot will analyze and return detailed toxicity predictions!
+
+### Example Bot Interaction
+**You:** `CC(=O)Oc1ccccc1C(=O)O`  
+**Bot:**
+```
+✅ **Toxicity Analysis Results**
+
+🧬 **SMILES:** CC(=O)Oc1ccccc1C(=O)O
+
+📊 **Predictions (Probability %):**
+• NR-AR: 15.2%
+• NR-ER: 22.5%
+• SR-MMP: 18.3%
+[... 12 total targets ...]
+
+📈 **Overall Risk:** 🟡 MEDIUM
+⚖️ **Average Toxicity:** 28.3%
+```
+
+### Bot Commands
+- `/start` - Welcome message with usage instructions
+- `/help` - Detailed help and SMILES format guide
+- Send any SMILES string for instant toxicity analysis
+
+### Setup & Deployment
+For detailed Telegram bot setup, configuration, and deployment instructions, see [TELEGRAM_BOT_SETUP.md](TELEGRAM_BOT_SETUP.md)
+
+### Support
+Type `/help` in the bot for:
+- How to get SMILES strings
+- Example compounds
+- Information about Tox21 targets
+- Supported input formats
+
 ## 🔐 Security Considerations
 
 - SMILES input validation is performed on the backend
