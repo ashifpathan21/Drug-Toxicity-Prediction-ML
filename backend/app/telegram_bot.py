@@ -116,7 +116,7 @@ async def handle_smiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         predictions_dict = {}
         max_prob = 0.0
         for target, data in result['targets'].items():
-            prob = float(data['predict_prob'])
+            prob = float(data['predict_prob']) * 100  # Convert from decimal (0.15) to percentage (15)
             predictions_dict[target] = prob
             max_prob = max(max_prob, prob)
         
@@ -170,7 +170,7 @@ async def handle_smiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 📈 **Overall Risk:** {risk_level}
 ⚖️ **Average Toxicity:** {avg_toxicity:.1f}%
-🎯 **Max Probability:** {float(result['max_prob']):.1f}%
+🎯 **Max Probability:** {max_prob:.1f}%
 
 💾 **Molecular Features:**
 • Molecular Weight: {mol_features['MolWt']:.2f}
