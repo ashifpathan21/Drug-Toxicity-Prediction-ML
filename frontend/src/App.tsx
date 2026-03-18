@@ -1,11 +1,20 @@
-import React, { useState } from "react";
-import Molecule, {type PredictionData } from "./component/Molecule";
+import React, { useState, useEffect } from "react";
+import Molecule from "./component/Molecule";
 import PredictionDetails from "./component/PredictionDetails";
 
 export default function App() {
   const [smiles, setSmiles] = useState("");
   const [query, setQuery] = useState("");
-  const [prediction, setPrediction] = useState<PredictionData | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -16,6 +25,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen max-w-screen overflow-x-hidden h-full relative">
+      <div 
+        className="fixed w-24 h-24 rounded-full pointer-events-none z-50"
+        style={{
+          left: `${mousePos.x - 48}px`,
+          top: `${mousePos.y - 48}px`,
+          background: 'radial-gradient(circle, rgba(0,255,170,0.3) 0%, rgba(0,255,170,0.1) 50%, transparent 70%)',
+          filter: 'blur(8px)',
+        }}
+      />
       <div className="scanline"></div>
       
       <nav className="p-4 flex items-center justify-between border-b border-outline-variant bg-surface-container-low">
@@ -61,19 +79,19 @@ export default function App() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-          <div className="card-panel grid p-4 h-full">
-            <div className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+          <div className="card-panel grid p-4 h-[650px]">
+            <div className="flex items-center justify-center mb-4 border-b border-outline-variant pb-2">
               <span className="text-sm font-bold uppercase tracking-widest text-[#00e5ff]">3D Structure Viewer</span>
               <span className="badge-accent">{query ? `RENDER_ACTIVE` : "STANDBY"}</span>
             </div>
-            <Molecule smiles={query} onPrediction={setPrediction} />
+            <Molecule smiles={query} />
           </div>
 
           <div className="card-panel card-panel-cyan p-4 h-full">
             <div className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
               <span className="text-sm font-bold uppercase tracking-widest text-[#00ffaa]">Analysis Results</span>
             </div>
-            <PredictionDetails prediction={prediction} />
+            <PredictionDetails smiles={query} />
           </div>
         </section>
       </main>

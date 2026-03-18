@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import type{ PredictionData } from "./Molecule";
+import Loading from "./Loading";
+
+type PredictionResponse = {
+  data?: PredictionData;
+};
 
 type Props = {
-  prediction: PredictionData | null;
+  smiles: string;
 };
 
 const columnMean: Record<string, string> = {
@@ -29,8 +35,47 @@ const tox21Descriptions: Record<string, string> = {
   "SR-p53": "p53 Pathway: Tumor suppressor; activation indicates DNA damage and potential carcinogenicity."
 };
 
-export default function PredictionDetails({ prediction }: Props) {
+export default function PredictionDetails({ smiles }: Props) {
+  const [prediction, setPrediction] = useState<PredictionData | null>(null);
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [animatedProb, setAnimatedProb] = useState<number>(0);
+
+  useEffect(() => {
+    if (!smiles) {
+      setPrediction(null);
+      setStatus("idle");
+      return;
+    }
+
+    setStatus("loading");
+    setErrorMessage("");
+
+    const backendBaseUrl = import.meta.env.VITE_API_URL || "https://drug-toxicity-prediction-ml.onrender.com";
+    const predUrl = `${backendBaseUrl}/predict?smiles=${encodeURIComponent(smiles)}`;
+
+    axios.get<PredictionResponse>(predUrl)
+      .then((res) => {
+        const predDataObj = res.data;
+        if (!predDataObj || !predDataObj.data) {
+          throw new Error("Invalid response from prediction server.");
+        }
+
+        const predictionData = predDataObj.data;
+        if (!predictionData.targets || predictionData.max_prob === undefined) {
+          throw new Error("Prediction data is incomplete.");
+        }
+        
+        setPrediction(predictionData);
+        setStatus("success");
+      })
+      .catch((err) => {
+        const message = err?.response?.data?.message || err?.message || "Prediction failed. No such smile exists.";
+        setStatus("error");
+        setErrorMessage(message);
+        setPrediction(null);
+      });
+  }, [smiles]);
 
   useEffect(() => {
     if (!prediction) {
@@ -55,7 +100,24 @@ export default function PredictionDetails({ prediction }: Props) {
     return () => window.clearInterval(timer);
   }, [prediction]);
 
-  if (!prediction) {
+  if (status === "loading") {
+    return (
+      <section className="flex items-center justify-center h-full p-6 bg-[#0a0e12]/50 border border-dashed border-[#00ffaa]/20 rounded-md min-h-[300px]">
+        <Loading />
+      </section>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <section className="flex flex-col items-center justify-center h-full p-6 bg-[#ff3333]/10 border border-dashed border-[#ff3333] rounded-md min-h-[300px]">
+        <div className="text-[#ff3333] font-bold text-lg mb-2">! ERROR</div>
+        <p className="text-[#ff3333]/80 font-mono text-sm text-center">{errorMessage}</p>
+      </section>
+    );
+  }
+
+  if (!prediction || status === "idle") {
     return (
       <section className="flex items-center justify-center h-full p-6 bg-[#0a0e12]/50 border border-dashed border-[#00ffaa]/20 rounded-md min-h-[300px]">
         <p className="text-[#00ffaa]/50 font-mono text-sm">Waiting for sequence metrics...</p>
@@ -64,7 +126,7 @@ export default function PredictionDetails({ prediction }: Props) {
   }
 
   return (
-    <section className="h-full flex flex-col space-y-6 animate-fade-in-scale text-sm">
+    <section className="flex flex-col space-y-6 animate-fade-in-scale text-sm">
       <div className="flex flex-wrap gap-6 items-center border border-outline-variant p-4 bg-[#111822] rounded-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-16 h-16 bg-[#00ffaa]/5 -skew-x-12 translate-x-4 -translate-y-4"></div>
         <div className={`prob-ring ${prediction.final_toxic_verdict ? "unsafe" : "safe"}`} style={{ "--p": `${animatedProb}` } as React.CSSProperties}>
@@ -117,7 +179,9 @@ export default function PredictionDetails({ prediction }: Props) {
             const probability = Number(target?.predict_prob ?? NaN);
             const threshold = Number(target?.threshold ?? NaN);
             const toxic = Boolean(target?.toxic); // IF Prob >= Threshold THEN toxic === true
-
+            if(targetName === 'toxic')
+              return;
+            
             return (
               <article key={`target-${targetName}`} className="p-4 border border-outline-variant bg-[#111822] rounded-md relative group hover:bg-[#1a2332] transition-colors">
                 <div className="flex justify-between items-center mb-3">

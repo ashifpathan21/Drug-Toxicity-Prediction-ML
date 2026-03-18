@@ -4,7 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Tox21 Toxicity Predictor")
 origins = [
-    "http://localhost:5173",  # Vite dev server
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "https://drug-toxicity-prediction.onrender.com" 
 ]
 
 app.add_middleware(
