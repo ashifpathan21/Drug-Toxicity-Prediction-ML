@@ -112,26 +112,35 @@ async def handle_smiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             return
         
         # Format prediction results
-        # Extract toxicity probabilities from targets
+        # Extract toxicity data from targets
         predictions_dict = {}
-        max_prob = 0.0
+        max_prob = float(result['max_prob'])
+        final_verdict = result['final_toxic_verdict']
+        
+        # Map targets with their data
         for target, data in result['targets'].items():
-            prob = float(data['predict_prob']) * 100  # Convert from decimal (0.15) to percentage (15)
-            predictions_dict[target] = prob
-            max_prob = max(max_prob, prob)
+            if target == 'toxic':  # Skip the generic toxic target
+                continue
+            prob = float(data['predict_prob'])  # Keep as decimal (0-1 range)
+            threshold = float(data['threshold'])
+            is_toxic = data['toxic']
+            predictions_dict[target] = {
+                'prob': prob,
+                'threshold': threshold,
+                'toxic': is_toxic
+            }
         
-        # Calculate average toxicity
-        avg_toxicity = sum(predictions_dict.values()) / len(predictions_dict) if predictions_dict else 0
-        
-        # Determine risk level
-        if avg_toxicity >= 70:
-            risk_level = "🔴 CRITICAL"
-        elif avg_toxicity >= 50:
-            risk_level = "🟠 HIGH"
-        elif avg_toxicity >= 30:
-            risk_level = "🟡 MEDIUM"
+        # Determine hazard level based on max_prob (matching frontend logic)
+        max_prob_percent = max_prob * 100
+        if max_prob_percent < 33:
+            hazard_level = "🟢 LOW"
+        elif max_prob_percent < 66:
+            hazard_level = "🟡 MEDIUM"
         else:
-            risk_level = "🟢 LOW"
+            hazard_level = "🔴 HIGH"
+        
+        # Overall verdict
+        verdict_text = "🔴 TOXICITY DETECTED" if final_verdict else "🟢 SAFE / NO TOXICITY"
         
         # Extract molecular features
         mol_features = {
@@ -146,35 +155,40 @@ async def handle_smiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             "HeavyAtomCount": result['info'][8],
         }
         
-        response_message = f"""✅ **Toxicity Analysis Results**
+        # Build response message matching frontend structure
+        response_message = f"""✅ **TOXICITY ANALYSIS RESULTS**
 
 🧬 **SMILES:** `{user_input}`
 
-📊 **Predictions (Probability %):**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**OVERALL VERDICT**
+{verdict_text}
+Hazard Level: {hazard_level}
+Max Probability: {(max_prob_percent):.1f}%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**🔴 Nuclear Receptors:**
-• AR: {predictions_dict.get('NR-AR', 0):.1f}%
-• AR-LBD: {predictions_dict.get('NR-AR-LBD', 0):.1f}%
-• AhR: {predictions_dict.get('NR-AhR', 0):.1f}%
-• Aromatase: {predictions_dict.get('NR-Aromatase', 0):.1f}%
-• ER: {predictions_dict.get('NR-ER', 0):.1f}%
-• ER-LBD: {predictions_dict.get('NR-ER-LBD', 0):.1f}%
-• PPAR-gamma: {predictions_dict.get('NR-PPAR-gamma', 0):.1f}%
+**📊 TARGET ENDPOINT BINDING (Tox21 ASSAYS)**
 
-**🟡 Stress Response Elements:**
-• ARE: {predictions_dict.get('SR-ARE', 0):.1f}%
-• ATAD5: {predictions_dict.get('SR-ATAD5', 0):.1f}%
-• HSE: {predictions_dict.get('SR-HSE', 0):.1f}%
-• MMP: {predictions_dict.get('SR-MMP', 0):.1f}%
-• p53: {predictions_dict.get('SR-p53', 0):.1f}%
+🔴 **NUCLEAR RECEPTORS:**
+• NR-AR: {(predictions_dict.get('NR-AR', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-AR', {}).get('toxic', False) else '🟢 SAFE'}
+• NR-AR-LBD: {(predictions_dict.get('NR-AR-LBD', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-AR-LBD', {}).get('toxic', False) else '🟢 SAFE'}
+• NR-AhR: {(predictions_dict.get('NR-AhR', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-AhR', {}).get('toxic', False) else '🟢 SAFE'}
+• NR-Aromatase: {(predictions_dict.get('NR-Aromatase', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-Aromatase', {}).get('toxic', False) else '🟢 SAFE'}
+• NR-ER: {(predictions_dict.get('NR-ER', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-ER', {}).get('toxic', False) else '🟢 SAFE'}
+• NR-ER-LBD: {(predictions_dict.get('NR-ER-LBD', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-ER-LBD', {}).get('toxic', False) else '🟢 SAFE'}
+• NR-PPAR-gamma: {(predictions_dict.get('NR-PPAR-gamma', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('NR-PPAR-gamma', {}).get('toxic', False) else '🟢 SAFE'}
 
-📈 **Overall Risk:** {risk_level}
-⚖️ **Average Toxicity:** {avg_toxicity:.1f}%
-🎯 **Max Probability:** {max_prob:.1f}%
+🟡 **STRESS RESPONSE ELEMENTS:**
+• SR-ARE: {(predictions_dict.get('SR-ARE', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('SR-ARE', {}).get('toxic', False) else '🟢 SAFE'}
+• SR-ATAD5: {(predictions_dict.get('SR-ATAD5', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('SR-ATAD5', {}).get('toxic', False) else '🟢 SAFE'}
+• SR-HSE: {(predictions_dict.get('SR-HSE', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('SR-HSE', {}).get('toxic', False) else '🟢 SAFE'}
+• SR-MMP: {(predictions_dict.get('SR-MMP', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('SR-MMP', {}).get('toxic', False) else '🟢 SAFE'}
+• SR-p53: {(predictions_dict.get('SR-p53', {}).get('prob', 0) * 100):.1f}% - {'🔴 TOXIC' if predictions_dict.get('SR-p53', {}).get('toxic', False) else '🟢 SAFE'}
 
-💾 **Molecular Features:**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**💾 PHYSICOCHEMICAL PROPERTIES**
 • Molecular Weight: {mol_features['MolWt']:.2f}
-• LogP (lipophilicity): {mol_features['MolLogP']:.2f}
+• LogP (Lipophilicity): {mol_features['MolLogP']:.2f}
 • TPSA: {mol_features['TPSA']:.2f}
 • H-Bond Donors: {mol_features['NumHDonors']:.0f}
 • H-Bond Acceptors: {mol_features['NumHAcceptors']:.0f}
@@ -183,9 +197,9 @@ async def handle_smiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 • Aromatic Rings: {mol_features['NumAromaticRings']:.0f}
 • Heavy Atom Count: {mol_features['HeavyAtomCount']:.0f}
 
-
-⚠️ **Disclaimer:** This is for research purposes. Not for clinical decision-making.
-📱 **Use Web App for More Details:** https://drug-toxicity-prediction.onrender.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ **DISCLAIMER:** For research & educational purposes only.
+For clinical decisions, consult domain experts.
 """
         await loading_msg.edit_text(response_message)
         
